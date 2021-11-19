@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  test, homeTabBanner, homeTabCategories, homeTabBrands, homeTabMostWanted, homeTabMostPopular, signup, checkUser
+  test, signup, checkUser
 } = require("../controllers/user")
 
 // test
