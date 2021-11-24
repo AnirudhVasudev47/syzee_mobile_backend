@@ -3,6 +3,7 @@ const axios = require("axios");
 const FormData = require('form-data');
 const request = require('request');
 const {mockUrl} = require("../config/constants");
+const {connection} = require("../config/database_config");
 
 exports.test = (req, res) => {
   return res.json({
@@ -78,7 +79,7 @@ exports.signup = (req, res) => {
   });
 }
 
-exports.checkUser = (req ,res) => {
+exports.checkUser = (req, res) => {
   const form = new formidable.IncomingForm();
   form.keepExtensions = true;
   
@@ -90,6 +91,8 @@ exports.checkUser = (req ,res) => {
     }
     
     const {email, phone} = fields;
+    
+    console.log('test')
     
     if (!email || !phone) {
       
@@ -125,4 +128,59 @@ exports.checkUser = (req ,res) => {
       }
     });
   });
+}
+
+exports.signin = (req, res) => {
+  
+  const form = new formidable.IncomingForm();
+  form.keepExtensions = true;
+  
+  form.parse(req, (err, fields) => {
+    if (err) {
+      return res.status(400).json({
+        error: `An error occurred ${err}`
+      });
+    }
+    
+    const {email, password} = fields;
+    
+    if (!email || !password) {
+      return res.status(404).json({
+        error: `All fields are mandatory`
+      });
+    }
+    
+    const regUrl = `${mockUrl}/login.php`;
+    const options = {
+      'method': 'POST',
+      'url': regUrl,
+      formData: {
+        'action': 'userLogin',
+        'email': email,
+        'password': password,
+      }
+    };
+    request(options, function (error, checkRes) {
+      if (error) {
+        return res.status(500).json({
+          error: error,
+        });
+      }
+      if (checkRes.body === '1') {
+        return res.json({
+          data: 'Not registered',
+        })
+      } else if (checkRes.body === '3') {
+        return res.json({
+          data: 'Wrong password',
+        })
+      } else {
+        return res.json({
+          data: checkRes.body,
+        });
+      }
+    });
+    
+  })
+  
 }
