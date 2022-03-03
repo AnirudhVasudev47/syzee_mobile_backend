@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  test, signup, checkUser, signin
+  test, signup, checkUser, signin, addToCart, getCartByUserEmail, getAllCoupons, deleteFromCart, setCartQuantity,
+  getUserDetailsByMail, getUserWishlist
 } = require("../controllers/user")
 
 // test
@@ -17,8 +18,23 @@ router.post('/user/signup', signup);
 // sign in
 router.post('/user/signin', signin);
 
-// sizing profile
-// get all profiles
+// user data
+router.post('/user/fetchDetails', getUserDetailsByMail);
 
+// cart routes
+
+router.post('/cart/add', addToCart);
+
+router.post('/cart/setCartQuantity', setCartQuantity);
+
+router.post('/cart/getByUserId', getCartByUserEmail);
+
+router.get('/coupon/getCoupons', getAllCoupons);
+
+router.delete('/cart/deleteById', deleteFromCart)
+
+// Wishlist routes
+
+router.post('/wishlist/user', getUserWishlist);
 
 module.exports = router;
