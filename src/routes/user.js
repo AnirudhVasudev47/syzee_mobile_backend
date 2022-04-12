@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {
   test, signup, checkUser, signin, addToCart, getCartByUserEmail, getAllCoupons, deleteFromCart, setCartQuantity,
-  getUserDetailsByMail, getUserWishlist
+  getUserDetailsByMail, getUserWishlist, addToWishlist, removeFromWishlist
 } = require("../controllers/user")
 
 // test
@@ -34,7 +34,11 @@ router.get('/coupon/getCoupons', getAllCoupons);
 router.delete('/cart/deleteById', deleteFromCart)
 
 // Wishlist routes
-
+// Get products
 router.post('/wishlist/user', getUserWishlist);
+// Add to Wishlist
+router.post('/wishlist/user/add', addToWishlist)
+// Remove from Wishlist
+router.post('/wishlist/user/remove', removeFromWishlist);
 
 module.exports = router;

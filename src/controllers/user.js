@@ -236,7 +236,7 @@ exports.getUserDetailsByMail = (req, res) => {
 
 exports.addToCart = (req, res) => {
 	
-	const form = formidable.IncomingForm();
+	const form = formidable.IncomingForm(req);
 	form.keepExtensions = true;
 	
 	form.parse(req, (err, fields) => {
@@ -453,7 +453,7 @@ exports.getAllCoupons = (req, res) => {
 			
 			let coup = moment(coupon.expiry);
 			
-			if (coup < moment.now()) { //TODO: flip the symbol
+			if (coup > moment.now()) { //TODO: flip the symbol (for test: '<')
 				result.push(coupon);
 			}
 			
@@ -537,25 +537,99 @@ exports.getUserWishlist = (req, res) => {
 				});
 			}
 			
-			const response = JSON.parse(checkRes.body);
 			let temp = [];
-			response.map((wish) => {
-				let obj = {};
-				obj.mainCatId = wish.mainCateID;
-				obj.productId = wish.PRODUCT_ID;
-				obj.image = JSON.parse(wish.IMAGE)[0];
-				obj.productName = wish.NAME;
-				obj.tagLine = wish.TAG_LINE;
-				obj.wishlist = true;
-				let data = JSON.parse(wish.VARIANTS);
-				obj.price = parseInt(data[0].RETAILED_PRICE);
-				temp.push(obj);
-			});
-			
+			if (checkRes.body != 0) {
+				const response = JSON.parse(checkRes.body);
+				response.map((wish) => {
+					let obj = {};
+					obj.mainCatId = wish.mainCateID;
+					obj.productId = wish.PRODUCT_ID;
+					obj.image = JSON.parse(wish.IMAGE)[0];
+					obj.productName = wish.NAME;
+					obj.tagLine = wish.TAG_LINE;
+					obj.size = wish.SIZE;
+					obj.wishlist = true;
+					let data = JSON.parse(wish.VARIANTS);
+					obj.price = parseInt(data[0].RETAILED_PRICE);
+					temp.push(obj);
+				});
+			}
 			return res.json({
 				data: temp,
 			});
 		});
 		
 	})
+}
+
+exports.addToWishlist = (req, res) => {
+	
+	const form = formidable.IncomingForm(req);
+	form.keepExtensions = true;
+	
+	form.parse(req, (err, fields) => {
+		if (err) {
+			return res.status(400).json({
+				error: err
+			});
+		}
+		
+		const {mainCatId, productId, size, email} = fields;
+		
+		if (!mainCatId || !productId || !size || !email) {
+			return res.status(404).json({
+				error: 'All fields are mandatory.',
+			});
+		}
+		const date = moment();
+		const addToWishQuery = "INSERT INTO `wishlist`(`SIZE`, `MAIN_ID`, `PRODUCT_ID`, `EMAIL`, `CREATED_ON`) VALUES (?,?,?,?,?)"
+		
+		connection.query(addToWishQuery, [size, mainCatId, productId, email, date.format('YYYY-MM-DD hh:mm:ss')], (error, addRes) => {
+			if (error) {
+				return res.status(500).json({
+					error: error,
+				});
+			}
+			
+			return res.json({
+				data: addRes,
+			});
+		});
+	});
+}
+
+exports.removeFromWishlist = (req, res) => {
+	
+	const form = formidable.IncomingForm(req);
+	form.keepExtensions = true;
+	
+	form.parse(req, (err, fields) => {
+		if (err) {
+			return res.status(400).json({
+				error: err
+			});
+		}
+		
+		const {mainCatId, productId, email} = fields;
+		
+		if (!mainCatId || !productId || !email) {
+			return res.status(404).json({
+				error: 'All fields are mandatory.',
+			});
+		}
+		
+		const removeFromWishQuery = "DELETE FROM `wishlist` WHERE `MAIN_ID`=? AND `PRODUCT_ID`=? AND `EMAIL`=?"
+		
+		connection.query(removeFromWishQuery, [mainCatId, productId, email], (error, removeRes) => {
+			if (error) {
+				return res.status(500).json({
+					error: error,
+				});
+			}
+			
+			return res.json({
+				data: removeRes,
+			});
+		});
+	});
 }

@@ -1,7 +1,7 @@
 const {connection} = require("../config/database_config");
 exports.listOfInfluencer = (req, res) => {
 	
-	const influencerQuery = 'SELECT DISTINCT `influencer_list`.`ID`, `influencer_list`.`NAME`, `influencer_list`.`IMAGE`, `influencer_list`.`EMAIL` FROM `influencer_stories` LEFT JOIN `influencer_list` ON `influencer_stories`.`influencer_id` = `influencer_list`.`ID`;';
+	const influencerQuery = 'SELECT DISTINCT `influencer_list`.`ID`, `influencer_list`.`NAME`, `influencer_list`.`IMAGE`, `influencer_list`.`EMAIL` FROM `influencer_stories` LEFT JOIN `influencer_list` ON `influencer_stories`.`influencer_id` = `influencer_list`.`ID` WHERE `influencer_stories`.`added_on`>= NOW() - INTERVAL 1 DAY';
 	
 	connection.query(influencerQuery, (err, influencerRes) => {
 		if (err) {
