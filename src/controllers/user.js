@@ -233,7 +233,6 @@ exports.getUserDetailsByMail = (req, res) => {
 	
 }
 
-
 exports.addToCart = (req, res) => {
 	
 	const form = formidable.IncomingForm(req);
@@ -303,7 +302,6 @@ exports.addToCart = (req, res) => {
 	})
 	
 }
-
 
 exports.getCartByUserEmail = (req, res) => {
 	
@@ -404,6 +402,42 @@ exports.getCartByUserEmail = (req, res) => {
 		
 	});
 	
+}
+
+exports.updateUserDetails = (req, res) => {
+	const form = formidable.IncomingForm(req);
+	form.keepExtensions = true;
+	
+	form.parse(req, (err, fields) => {
+		if (err) {
+			return res.status(400).json({
+				error: err
+			});
+		}
+		
+		const {name, phone, code, email} = fields;
+		
+		if (!name || !phone || !code || !email) {
+			return res.status(404).json({
+				error: 'All fields are mandatory.',
+			});
+		}
+		const date = moment();
+		
+		const updateUserQuery = 'UPDATE `register` SET `NAME`=?,`PHONE_NUMBER`=?,`CODE`=?,`RESET_ON`=? WHERE `EMAIL`=?';
+		
+		connection.query(updateUserQuery, [name, phone, code, date.format('YYYY-MM-DD hh:mm:ss'), email], (err, updateRes) => {
+			if (err) {
+				return res.status(500).json({
+					error: err
+				});
+			}
+			
+			res.json({
+				data: updateRes,
+			});
+		});
+	});
 }
 
 exports.setCartQuantity = (req, res) => {

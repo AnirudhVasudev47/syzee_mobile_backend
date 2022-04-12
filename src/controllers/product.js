@@ -481,7 +481,7 @@ exports.getCompleteLook = (req, res) => {
 		} else if (mainCatId == 3) { // Men Category
 			const menQuery = 'SELECT `men`.`ID` AS `productId`, `men`.`PRODUCT_ID` AS `id`, `men`.`NAME` AS `name`, `men`.`IMAGE` AS `image`, `men`.`VARIANTS` AS `price`, `men`.`CREATED_ON` AS `created_on`, `men`.`RATINGS` AS `rating`, `men`.`COLOUR` AS `color`, `brand`.`NAME` AS `brand` FROM `men` LEFT JOIN `brands` ON `men`.`BRAND_ID` = `brands`.`ID` WHERE `men`.`SELLER_ID` = ? AND `men`.`PRODUCT_ID` != ?'
 			
-			connection.query(menQuery, [sellerId, productStyle],(err, menResults) => {
+			connection.query(menQuery, [sellerId, productStyle], (err, menResults) => {
 				if (err)
 					return res.status(500).json({
 						error: 'Something went wrong'
@@ -531,5 +531,49 @@ exports.getCompleteLook = (req, res) => {
 				}
 			});
 		}
+	});
+}
+
+exports.getProductReview = (req, res) => {
+	const form = new formidable.IncomingForm();
+	form.keepExtensions = true;
+	form.parse(req, (err, fields) => {
+		if (err) {
+			return res.status(400).json({
+				error: 'Bad request'
+			});
+		}
+		
+		const {mainCatId, productId} = fields;
+		
+		if (!mainCatId || !productId) {
+			return res.status(400).json({
+				error: 'All fields are mandatory.'
+			});
+		}
+		
+		const getReviewQuery = 'SELECT `ID`,`ORDER_ID`,`PRODUCT_ID`,`MAIN_ID`,`IMAGE`,`REVIEW_VALUE`,`DESCRIPTION`,`USER_EMAIL`,`CREATED_ON` FROM `reviews` WHERE `PRODUCT_ID`=? AND `MAIN_ID`=?';
+		const getAvgQuery = 'SELECT AVG(`REVIEW_VALUE`) FROM `reviews` WHERE `PRODUCT_ID`=? AND `MAIN_ID`=?';
+		
+		connection.query(getReviewQuery, [productId, mainCatId], (err, reviewRes) => {
+			if (err) {
+				return res.status(500).json({
+					error: 'Something went wrong.'
+				});
+			}
+			
+			connection.query(getAvgQuery, [productId, mainCatId], (err, avgRes) => {
+				if (err) {
+					return res.status(500).json({
+						error: 'Something went wrong.'
+					});
+				}
+				
+				res.json({
+					average: avgRes[0]['AVG(`REVIEW_VALUE`)'],
+					data: reviewRes,
+				});
+			});
+		});
 	});
 }

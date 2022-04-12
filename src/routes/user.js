@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {
   test, signup, checkUser, signin, addToCart, getCartByUserEmail, getAllCoupons, deleteFromCart, setCartQuantity,
-  getUserDetailsByMail, getUserWishlist, addToWishlist, removeFromWishlist
+  getUserDetailsByMail, getUserWishlist, addToWishlist, removeFromWishlist, updateUserDetails
 } = require("../controllers/user")
 
 // test
@@ -20,6 +20,9 @@ router.post('/user/signin', signin);
 
 // user data
 router.post('/user/fetchDetails', getUserDetailsByMail);
+
+// update user
+router.post('/user/update', updateUserDetails)
 
 // cart routes
 
